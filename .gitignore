@@ -1,0 +1,7 @@
+/dist
+/build
+/env
+*.pyc
+.DS_Store
+/slick_app.egg-info
+/TODO.md
