@@ -1,0 +1,7 @@
+/dist
+/build
+/env
+*.pyc
+.DS_Store
+/sk.egg-info
+/TODO.md
