@@ -12,7 +12,7 @@ Using python 3.7, run:
 
 ## Usage
 
-To start slick, run `sk`. Running `/help` you'll get:
+To start slick, run `slick`. Running `/help` you'll get:
 
 ```
 /list           -- show active friends and nearby people
