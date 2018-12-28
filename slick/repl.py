@@ -22,6 +22,7 @@ potential_commands = [
     "/send ",
     "/get ",
     "/end ",
+    "/ls ",
     "/list ",
     "/talk ",
     "/add ",
@@ -112,17 +113,17 @@ class Repl:
         loop.create_task(self.run_update())
 
     async def run(self):
-        self.help_text = """
-/list	        -- show active friends and nearby people
-/add  [subject] -- add a person
-/talk [subject] -- talk to someone
-/end            -- stop talking to someone
-/quit           -- quit the program
-/send           -- send a file
-/get            -- get a file
-/info
+        self.help_text = HTML("""
+<b>/list | /ls</b>      show active friends and nearby people
+<b>/add  [subject]</b>  add a person
+<b>/talk [subject]</b>  talk to someone
+<b>/end</b>             stop talking to someone
+<b>/quit</b>            quit the program
+<b>/send</b>            send a file
+<b>/get</b>             get a file
+<b>/info</b>            print status information
 
-"""
+""")
         if self.app.identity.requires_setup():
             name = (
                 await self.prompt_session.prompt(
@@ -153,12 +154,12 @@ class Repl:
                         if answer == "/end":
                             await self.end_conversation()
                         elif answer == "/help":
-                            print(self.help_text)
+                            print_formatted_text(self.help_text)
                         elif answer.startswith("/send"):
                             await self.send_file(answer[5:].strip())
                         elif answer.startswith("/get"):
                             await self.get_file(answer[4:].strip())
-                        elif answer.startswith("/list"):
+                        elif answer.startswith("/list") or answer.startswith("/ls"):
                             await self.list()
                         elif answer.startswith("/add"):
                             await self.add(answer[4:].strip())
@@ -167,15 +168,15 @@ class Repl:
                         elif answer.startswith("/info"):
                             await self.info()
                         else:
-                            print(self.help_text)
+                            print_formatted_text(self.help_text)
                             self.prompt_session.app.invalidate()
                     else:
                         if self.active_friend:
                             if not await self.active_friend.send(answer):
                                 print(f"cannot reach {self.active_friend.name}")
                         else:
-                            print("You're not talking to anyone")
-                            print(self.help_text)
+                            print_formatted_text(HTML("You're not currently talking to anyone\n\nUse <b>/talk [subject]</b> to talk to someone"))
+                            print_formatted_text(self.help_text)
 
             except KeyboardInterrupt:
                 print("stopping...")
