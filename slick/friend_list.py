@@ -35,12 +35,19 @@ class FriendList:
         return self._friends
 
     async def add(self, friend):
-        with open(
-            os.path.join(self.friend_dir, f"{friend.name}-{friend.digest.hex()}"), "w"
-        ) as fh:
+        if os.path.isfile(self.friend_path(friend)):
+            return
+        with open(self.friend_path(friend), "w") as fh:
             friend.write(fh)
             self._friends.append(friend)
             await self.app.talk_server.restart()
+
+    async def remove(self, friend):
+        self._friends.remove(friend)
+        os.remove(self.friend_path(friend))
+
+    def friend_path(self, friend):
+        return os.path.join(self.friend_dir, f"{friend.name}-{friend.digest.hex()}")
 
     def get_friend_for_onion(self, onion):
         for f in self._friends:

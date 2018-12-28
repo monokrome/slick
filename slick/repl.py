@@ -26,6 +26,7 @@ potential_commands = [
     "/list ",
     "/talk ",
     "/add ",
+    "/remove ",
     "/help ",
     "/info ",
 ]
@@ -113,17 +114,20 @@ class Repl:
         loop.create_task(self.run_update())
 
     async def run(self):
-        self.help_text = HTML("""
-<b>/list | /ls</b>      show active friends and nearby people
-<b>/add  [subject]</b>  add a person
-<b>/talk [subject]</b>  talk to someone
-<b>/end</b>             stop talking to someone
-<b>/quit</b>            quit the program
-<b>/send</b>            send a file
-<b>/get</b>             get a file
-<b>/info</b>            print status information
+        self.help_text = HTML(
+            """
+<b>/list | /ls</b>        show active friends and nearby people
+<b>/add    [subject]</b>  add a person
+<b>/remove [subject]</b>  add a person
+<b>/talk   [subject]</b>  talk to someone
+<b>/end</b>               stop talking to someone
+<b>/quit</b>              quit the program
+<b>/send</b>              send a file
+<b>/get</b>               get a file
+<b>/info</b>              print status information
 
-""")
+"""
+        )
         if self.app.identity.requires_setup():
             name = (
                 await self.prompt_session.prompt(
@@ -163,6 +167,8 @@ class Repl:
                             await self.list()
                         elif answer.startswith("/add"):
                             await self.add(answer[4:].strip())
+                        elif answer.startswith("/remove"):
+                            await self.remove(answer[7:].strip())
                         elif answer.startswith("/talk"):
                             await self.talk(answer[5:].strip())
                         elif answer.startswith("/info"):
@@ -175,7 +181,11 @@ class Repl:
                             if not await self.active_friend.send(answer):
                                 print(f"cannot reach {self.active_friend.name}")
                         else:
-                            print_formatted_text(HTML("You're not currently talking to anyone\n\nUse <b>/talk [subject]</b> to talk to someone"))
+                            print_formatted_text(
+                                HTML(
+                                    "You're not currently talking to anyone\n\nUse <b>/talk [subject]</b> to talk to someone"
+                                )
+                            )
                             print_formatted_text(self.help_text)
 
             except KeyboardInterrupt:
@@ -299,6 +309,21 @@ class Repl:
 
             if isinstance(match, FriendRequest):
                 self.friend_request_count -= 1
+
+    async def remove(self, name):
+        matches = list(
+            filter(
+                lambda f: f.__str__().startswith(name), self.app.friend_list.friends()
+            )
+        )
+        if len(matches) == 0:
+            print("no one matches that name")
+        elif len(matches) > 1:
+            print("too many match that name")
+        else:
+            match = matches[0]
+            await self.app.friend_list.remove(match)
+            print(f"Removed {match}")
 
     async def update(self):
         self.nearby = list(
