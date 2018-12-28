@@ -284,6 +284,14 @@ class Repl:
             print("too many match that name")
         else:
             match = self.addable_entities[matches[0]]
+            name = await self.app.identity.name()
+            digest = await self.app.certificate.digest()
+
+            other_name = match.name
+            other_digest = match.digest
+            print(f"> {name} {digest.hex()}")
+            print(f"> {other_name} {other_digest.hex()}")
+
             await match.add()
 
             del self.addable_entities[matches[0]]
