@@ -47,4 +47,18 @@ To receive a file, use `/get #`
 
 ## Design
 
-Slick uses multicast DNS to broadcast a) a digest of the certificate used by HTTPS b) a tor service to facilitate the initial key exchange.
+At a high level, Slick allows encrypted communication between two parties. It accomplishes this by running two servers which are then made available over tor, the **certificate server** and the **talk server**. It distributes information on how to communicate via **multicast DNS**.
+
+Slick advertizes for the following over **multicast DNS**:
+
+1. A NaCL public key (https://nacl.cr.yp.to/box.html)
+2. A SHA-256 digest of your HTTPS certificate
+3. The onion address of the **certificate server**
+
+The **certificate server** uses HTTP, and expects data encoded with the public key advertized over multicast DNS. Data sent to this server is used to request access to your **talk server**. The following data is sent:
+
+1. The certificate of the user requesting access
+2. The name of the user requesting access
+3. The NaCL public key of the user requesting access
+
+Once both parties mutually accept the certificates, then communication is performed over the **talk server**. The talk server is made available as an onion service. The address for this onion service is encoded in the certificate. HTTPS with mutual TLS is used to identity and authenticate users.
